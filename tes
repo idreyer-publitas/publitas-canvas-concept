@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Publitas — Campaign Canvas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink: #1a1917;
+  --ink-2: #6b6760;
+  --ink-3: #a8a49f;
+  --ink-4: #d4d0ca;
+  --paper: #faf9f7;
+  --paper-2: #f2f0ec;
+  --paper-3: #e8e5df;
+  --white: #ffffff;
+  --green: #2d6a4f;
+  --green-bg: #eaf4ef;
+  --blue: #1e3a5f;
+  --blue-bg: #e8f0f9;
+  --shadow: 0 2px 8px rgba(26,25,23,0.08), 0 1px 2px rgba(26,25,23,0.04);
+  --shadow-lg: 0 16px 48px rgba(26,25,23,0.14), 0 4px 12px rgba(26,25,23,0.06);
+}
+
+html, body {
+  font-family: 'Instrument Sans', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── SHELL — no fixed height, flows naturally ── */
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--paper-3);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 10px;
+  height: 52px;
+  flex-shrink: 0;
+}
+.logo {
+  font-family: 'Instrument Serif', serif;
+  font-size: 18px;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  padding-right: 16px;
+  border-right: 1px solid var(--paper-3);
+  white-space: nowrap;
+}
+.crumb {
+  font-size: 12px;
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.crumb b { color: var(--ink); font-weight: 500; }
+.spacer { flex: 1; min-width: 12px; }
+
+/* ── MODE TOGGLE — clear, prominent ── */
+.mode-toggle {
+  display: flex;
+  background: var(--paper-2);
+  border: 1px solid var(--paper-3);
+  border-radius: 30px;
+  padding: 3px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.modebt {
+  height: 32px;
+  padding: 0 20px;
+  border-radius: 24px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--ink-3);
+  font-family: 'Instrument Sans', sans-serif;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+.modebt.on {
+  background: var(--white);
+  color: var(--ink);
+  box-shadow: 0 1px 4px rgba(26,25,23,0.12), 0 1px 2px rgba(26,25,23,0.06);
+}
+
+.tbtn {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 6px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--paper-3);
+  background: var(--white);
+  color: var(--ink-2);
+  white-space: nowrap;
+  transition: all 0.12s;
+}
+.tbtn:hover { background: var(--paper); color: var(--ink); }
+.tbtn-pub { background: var(--ink); color: var(--white); border-color: var(--ink); }
+.tbtn-pub:hover { background: #333; }
+
+/* ── BODY ROW ── */
+.body-row {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── LEFT PANEL ── */
+.lpanel {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--white);
+  border-right: 1px solid var(--paper-3);
+  display: flex;
+  flex-direction: column;
+}
+.panel-head {
+  padding: 16px 16px 14px;
+  border-bottom: 1px solid var(--paper-2);
+}
+.plabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink-4);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  margin-bottom: 9px;
+}
+.brief-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 5px;
+}
+.brief-meta {
+  font-size: 11px;
+  color: var(--ink-2);
+  line-height: 1.65;
+}
+.tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+.tag {
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+}
+.tg { background: var(--green-bg); color: var(--green); }
+.tb { background: var(--blue-bg); color: var(--blue); }
+.ai-note {
+  margin: 10px 14px 0;
+  padding: 8px 10px;
+  background: var(--paper);
+  border-left: 2px solid var(--ink-4);
+  border-radius: 0 5px 5px 0;
+  font-size: 11px;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+.ai-note strong { color: var(--ink); font-weight: 500; }
+.psec { padding: 12px 16px; border-bottom: 1px solid var(--paper-2); }
+.layer-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.layer-row:hover { background: var(--paper); }
+.layer-row.sel { background: var(--paper-2); }
+.ldot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.lname { font-size: 11.5px; color: var(--ink-2); flex: 1; }
+.layer-row.sel .lname { color: var(--ink); font-weight: 500; }
+.lvis {
+  width: 13px; height: 13px;
+  border-radius: 3px;
+  border: 1px solid var(--paper-3);
+}
+.variants-foot {
+  padding: 12px 16px;
+  border-top: 1px solid var(--paper-2);
+  margin-top: auto;
+}
+.vpills { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+.vpill {
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--paper-3);
+  background: var(--white);
+  color: var(--ink-2);
+  font-family: 'Instrument Sans', sans-serif;
+  transition: all 0.12s;
+}
+.vpill.m { background: var(--ink); color: var(--white); border-color: var(--ink); }
+.vadd {
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  cursor: pointer;
+  border: 1px dashed var(--ink-4);
+  background: transparent;
+  color: var(--ink-3);
+  font-family: 'Instrument Sans', sans-serif;
+}
+
+/* ── CANVAS AREA ── */
+.canvas-area {
+  flex: 1;
+  background: var(--paper-2);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Canvas scroll — the flyer lives here */
+.canvas-scroll {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px 200px;
+  transition: opacity 0.25s, filter 0.25s;
+}
+.canvas-area.prompt .canvas-scroll {
+  opacity: 0.25;
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+/* ── PROMPT BAR — canvas mode ── */
+.prompt-bar {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 500px;
+  max-width: calc(100% - 40px);
+  z-index: 10;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.canvas-area.prompt .prompt-bar {
+  opacity: 0;
+  transform: translateX(-50%) translateY(12px);
+  pointer-events: none;
+}
+.pb-wrap {
+  background: var(--white);
+  border: 1px solid var(--paper-3);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+.pb-last {
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid var(--paper-2);
+}
+.pb-last-label {
+  font-size: 10px;
+  color: var(--ink-4);
+  font-weight: 500;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.pb-last-text {
+  font-size: 12px;
+  color: var(--ink);
+  line-height: 1.5;
+}
+.pb-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 10px 10px 14px;
+}
+.pb-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 13px;
+  color: var(--ink);
+}
+.pb-input::placeholder { color: var(--ink-4); }
+.pb-kbd {
+  font-size: 10px;
+  color: var(--ink-4);
+  white-space: nowrap;
+}
+.pb-send {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--ink);
+  border: none;
+  cursor: pointer;
+  color: var(--white);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s;
+}
+.pb-send:hover { background: #333; }
+.pb-chips {
+  display: flex;
+  gap: 5px;
+  padding: 0 10px 10px;
+  flex-wrap: wrap;
+}
+.chip {
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 5px;
+  background: var(--paper);
+  border: 1px solid var(--paper-3);
+  color: var(--ink-2);
+  font-size: 11px;
+  cursor: pointer;
+  font-family: 'Instrument Sans', sans-serif;
+  transition: all 0.1s;
+}
+.chip:hover { background: var(--paper-2); color: var(--ink); border-color: var(--ink-4); }
+
+/* ── PROMPT OVERLAY — prompt mode ── */
+.prompt-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 28px 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.canvas-area.prompt .prompt-overlay {
+  opacity: 1;
+  pointer-events: all;
+}
+.po-thread {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.po-msg { display: flex; gap: 10px; align-items: flex-start; }
+.po-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.po-msg.user .po-avatar { background: var(--paper-3); color: var(--ink-2); }
+.po-msg.ai .po-avatar { background: var(--ink); color: var(--white); }
+.po-bubble {
+  background: var(--white);
+  border: 1px solid var(--paper-3);
+  border-radius: 10px 10px 10px 3px;
+  padding: 9px 13px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--ink);
+  max-width: 400px;
+  box-shadow: var(--shadow);
+}
+.po-msg.user .po-bubble {
+  background: var(--ink);
+  color: var(--white);
+  border-color: var(--ink);
+  border-radius: 10px 10px 3px 10px;
+}
+.po-input-wrap {
+  width: 100%;
+  max-width: 520px;
+  background: var(--white);
+  border: 1px solid var(--paper-3);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+.po-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 10px 12px 16px;
+}
+.po-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 13px;
+  color: var(--ink);
+}
+.po-input::placeholder { color: var(--ink-4); }
+.po-send {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  background: var(--ink);
+  border: none;
+  cursor: pointer;
+  color: var(--white);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.po-chips {
+  display: flex;
+  gap: 5px;
+  padding: 0 12px 12px;
+  flex-wrap: wrap;
+}
+
+/* ── RIGHT PANEL ── */
+.rpanel {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--white);
+  border-left: 1px solid var(--paper-3);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.rhead {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--paper-2);
+}
+.rhead-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+.rtitle { font-size: 13px; font-weight: 600; color: var(--ink); }
+.rbadge {
+  font-size: 10px;
+  font-weight: 500;
+  background: var(--blue-bg);
+  color: var(--blue);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+.rsub { font-size: 11px; color: var(--ink-3); }
+.rsec { padding: 12px 16px; border-bottom: 1px solid var(--paper-2); }
+.rlabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink-4);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.sug {
+  background: var(--paper);
+  border-radius: 8px;
+  padding: 10px;
+}
+.sug-lbl { font-size: 10px; font-weight: 600; color: var(--ink-2); margin-bottom: 5px; }
+.sug-txt { font-size: 11px; color: var(--ink-2); line-height: 1.5; margin-bottom: 8px; }
+.sug-row { display: flex; gap: 5px; }
+.sbtn {
+  flex: 1; height: 26px;
+  border-radius: 5px;
+  font-size: 11px; font-weight: 500;
+  cursor: pointer; border: none;
+  font-family: 'Instrument Sans', sans-serif;
+  transition: all 0.1s;
+}
+.sbtn-y { background: var(--ink); color: var(--white); }
+.sbtn-n { background: transparent; color: var(--ink-2); border: 1px solid var(--paper-3); }
+.prop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+.prop:last-child { margin: 0; }
+.pk { font-size: 11px; color: var(--ink-2); }
+.pv {
+  font-size: 11px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--paper-3);
+  border-radius: 4px;
+  padding: 3px 8px;
+  width: 76px;
+  text-align: right;
+  font-family: 'Instrument Sans', sans-serif;
+}
+.feed-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--paper-2);
+}
+.feed-row:last-child { border: none; }
+.fthumb {
+  width: 30px; height: 30px;
+  border-radius: 5px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+.c1 { background: #fde8d8; }
+.c2 { background: #dbeafe; }
+.c3 { background: #dcfce7; }
+.c6 { background: #ede9fe; }
+.finfo { flex: 1; min-width: 0; }
+.fn { font-size: 11px; font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fm { font-size: 10px; color: var(--ink-3); }
+.fadd {
+  width: 22px; height: 22px;
+  border-radius: 4px;
+  border: 1px solid var(--paper-3);
+  background: transparent;
+  color: var(--ink-3);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.1s;
+}
+.fadd:hover { background: var(--ink); color: var(--white); border-color: var(--ink); }
+
+/* ── FLYER ── */
+.flyer {
+  width: 290px;
+  background: var(--white);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
+}
+.fhero { background: #0d1b2a; padding: 24px 18px 20px; }
+.feyebrow { font-size: 9px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 7px; }
+.fheadline { font-family: 'Instrument Serif', serif; font-size: 23px; color: #fff; line-height: 1.15; margin-bottom: 5px; letter-spacing: -0.02em; }
+.fsub { font-size: 11px; color: rgba(255,255,255,0.38); margin-bottom: 15px; }
+.fcta { display: inline-flex; align-items: center; height: 30px; padding: 0 14px; background: #fff; color: #0d1b2a; border-radius: 6px; font-size: 11px; font-weight: 600; }
+.fprods { padding: 13px; background: var(--paper); }
+.fsec { font-size: 9px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 8px; }
+.fgrid { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; }
+.fprod { background: var(--white); border-radius: 6px; overflow: hidden; border: 1.5px solid transparent; box-shadow: 0 1px 3px rgba(26,25,23,0.06); }
+.fprod.sel { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.fpimg { width: 100%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 19px; }
+.fpi { padding: 4px 5px 6px; }
+.fpn { font-size: 9px; font-weight: 600; color: var(--ink); margin-bottom: 1px; }
+.fpp { font-size: 9px; font-weight: 600; color: #dc2626; }
+.fpw { font-size: 8px; color: var(--ink-3); text-decoration: line-through; margin-left: 1px; }
+.fbanner { padding: 10px 13px; background: var(--white); border-top: 1px solid var(--paper-3); display: flex; align-items: center; justify-content: space-between; }
+.fbt { font-size: 11px; font-weight: 500; color: var(--ink-2); }
+.fbc { font-size: 10px; font-family: 'Courier New', monospace; font-weight: 700; background: var(--paper-2); border: 1px dashed var(--paper-3); padding: 3px 7px; border-radius: 4px; color: var(--ink); letter-spacing: 0.05em; }
+.selring { position: absolute; border: 1.5px solid #3b82f6; border-radius: 5px; pointer-events: none; }
+.selh { position: absolute; width: 7px; height: 7px; background: var(--white); border: 1.5px solid #3b82f6; border-radius: 1px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="logo">Publitas</div>
+    <div class="crumb">Campaigns / Summer Sale 2026 / <b>Week 24 — DACH</b></div>
+    <div class="spacer"></div>
+
+    <!-- MODE TOGGLE — centred, prominent -->
+    <div class="mode-toggle">
+      <button class="modebt on" id="btn-canvas" onclick="setMode('canvas')">✦ Canvas</button>
+      <button class="modebt" id="btn-prompt" onclick="setMode('prompt')">◎ Prompt</button>
+    </div>
+
+    <div class="spacer"></div>
+    <button class="tbtn">Review</button>
+    <button class="tbtn tbtn-pub">Publish →</button>
+  </header>
+
+  <!-- BODY -->
+  <div class="body-row" style="display:flex; flex:1; min-height:600px;">
+
+    <!-- LEFT -->
+    <aside class="lpanel">
+      <div class="panel-head">
+        <div class="plabel">Brief</div>
+        <div class="brief-name">Summer Sale W24</div>
+        <div class="brief-meta">Hero: Footwear<br>Market: DACH · All segments<br>Goal: Clear summer stock</div>
+        <div class="tags">
+          <span class="tag tg">847 products</span>
+          <span class="tag tb">Margin priority</span>
+        </div>
+      </div>
+      <div class="ai-note"><strong>Pre-filled from W24 2025</strong> — 3 products updated for current stock.</div>
+      <div class="psec">
+        <div class="plabel">Layers</div>
+        <div class="layer-row"><div class="ldot" style="background:#0d1b2a"></div><span class="lname">Hero</span><div class="lvis"></div></div>
+        <div class="layer-row sel"><div class="ldot" style="background:#e8e5df;border:1px solid #d4d0ca"></div><span class="lname">Product grid</span><div class="lvis"></div></div>
+        <div class="layer-row"><div class="ldot" style="background:#faf9f7;border:1px solid #d4d0ca"></div><span class="lname">Promo banner</span><div class="lvis"></div></div>
+      </div>
+      <div class="variants-foot">
+        <div class="plabel">Variants</div>
+        <div class="vpills">
+          <button class="vpill m">Master</button>
+          <button class="vpill">DE</button>
+          <button class="vpill">AT</button>
+          <button class="vpill">CH</button>
+          <button class="vadd">+ add</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CANVAS -->
+    <main class="canvas-area" id="canvas-area">
+
+      <div class="canvas-scroll">
+        <div class="flyer">
+          <div class="fhero">
+            <div class="feyebrow">Summer Sale 2026 · Week 24</div>
+            <div class="fheadline">Bis zu 40%<br>auf Sommerschuhe</div>
+            <div class="fsub">Nur solange der Vorrat reicht</div>
+            <div class="fcta">Jetzt shoppen →</div>
+          </div>
+          <div class="fprods">
+            <div class="fsec">Ausgewählte Produkte</div>
+            <div class="fgrid">
+              <div class="fprod sel"><div class="fpimg c1">👟</div><div class="fpi"><div class="fpn">Runner Pro X</div><div class="fpp">€59 <span class="fpw">€89</span></div></div></div>
+              <div class="fprod"><div class="fpimg c2">👡</div><div class="fpi"><div class="fpn">Summer Mule</div><div class="fpp">€39 <span class="fpw">€65</span></div></div></div>
+              <div class="fprod"><div class="fpimg c3">🥾</div><div class="fpi"><div class="fpn">Trail Hiker</div><div class="fpp">€79 <span class="fpw">€120</span></div></div></div>
+              <div class="fprod"><div class="fpimg c1">👠</div><div class="fpi"><div class="fpn">Evening Slide</div><div class="fpp">€29 <span class="fpw">€49</span></div></div></div>
+              <div class="fprod"><div class="fpimg c2">👞</div><div class="fpi"><div class="fpn">City Walker</div><div class="fpp">€49 <span class="fpw">€75</span></div></div></div>
+              <div class="fprod"><div class="fpimg c6">🩴</div><div class="fpi"><div class="fpn">Beach Flip</div><div class="fpp">€19 <span class="fpw">€29</span></div></div></div>
+            </div>
+          </div>
+          <div class="fbanner"><div class="fbt">Extra 10% mit Code</div><div class="fbc">SOMMER10</div></div>
+          <div class="selring" style="top:105px;left:9px;width:272px;height:150px;">
+            <div class="selh" style="top:-4px;left:-4px"></div>
+            <div class="selh" style="top:-4px;right:-4px"></div>
+            <div class="selh" style="bottom:-4px;left:-4px"></div>
+            <div class="selh" style="bottom:-4px;right:-4px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CANVAS MODE PROMPT BAR -->
+      <div class="prompt-bar" id="prompt-bar">
+        <div class="pb-wrap">
+          <div class="pb-last">
+            <div class="pb-last-label">Last action</div>
+            <div class="pb-last-text">6 products selected by margin + promo flag. Hero copy generated in German.</div>
+          </div>
+          <div class="pb-input-row">
+            <input class="pb-input" placeholder="Refine, swap products, change layout…" />
+            <span class="pb-kbd">⌘↵</span>
+            <button class="pb-send">↑</button>
+          </div>
+          <div class="pb-chips">
+            <button class="chip">Swap hero product</button>
+            <button class="chip">More urgent copy</button>
+            <button class="chip">Apply to all variants</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROMPT MODE OVERLAY -->
+      <div class="prompt-overlay" id="prompt-overlay">
+        <div class="po-thread">
+          <div class="po-msg user">
+            <div class="po-avatar">IL</div>
+            <div class="po-bubble">Summer sale DACH, hero footwear, clear stock priority</div>
+          </div>
+          <div class="po-msg ai">
+            <div class="po-avatar">AI</div>
+            <div class="po-bubble">Done — 6 products selected by margin and promo flag. Hero copy in German. Switch to Canvas to review and edit directly, or keep refining here.</div>
+          </div>
+        </div>
+        <div class="po-input-wrap">
+          <div class="po-input-row">
+            <input class="po-input" placeholder="Continue the conversation…" />
+            <button class="po-send">↑</button>
+          </div>
+          <div class="po-chips">
+            <button class="chip">Swap hero product</button>
+            <button class="chip">Add loyalty variant</button>
+            <button class="chip">More urgent copy</button>
+            <button class="chip">Apply to all variants</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- RIGHT -->
+    <aside class="rpanel">
+      <div class="rhead">
+        <div class="rhead-row"><div class="rtitle">Product grid</div><div class="rbadge">AI selected</div></div>
+        <div class="rsub">6 products · sorted by margin</div>
+      </div>
+      <div class="rsec">
+        <div class="sug">
+          <div class="sug-lbl">✦ Suggestion</div>
+          <div class="sug-txt">Runner Pro X: 62% margin + low stock. Move to hero?</div>
+          <div class="sug-row">
+            <button class="sbtn sbtn-y">Apply</button>
+            <button class="sbtn sbtn-n">Skip</button>
+          </div>
+        </div>
+      </div>
+      <div class="rsec">
+        <div class="rlabel">Layout</div>
+        <div class="prop"><span class="pk">Columns</span><input class="pv" value="3" /></div>
+        <div class="prop"><span class="pk">Products</span><input class="pv" value="6" /></div>
+        <div class="prop"><span class="pk">Sort by</span><input class="pv" value="margin" /></div>
+      </div>
+      <div class="rsec" style="border-bottom:none;">
+        <div class="rlabel">Feed · 847 products</div>
+        <div class="feed-row"><div class="fthumb c1">👟</div><div class="finfo"><div class="fn">Runner Pro X</div><div class="fm">€59 · 62% margin · low stock</div></div><button class="fadd">+</button></div>
+        <div class="feed-row"><div class="fthumb c2">👡</div><div class="finfo"><div class="fn">Summer Mule</div><div class="fm">€39 · 48% margin</div></div><button class="fadd">+</button></div>
+        <div class="feed-row"><div class="fthumb c3">🥾</div><div class="finfo"><div class="fn">Trail Hiker</div><div class="fm">€79 · 55% margin · promo</div></div><button class="fadd">+</button></div>
+        <div class="feed-row"><div class="fthumb c6">🩴</div><div class="finfo"><div class="fn">Beach Flip</div><div class="fm">€19 · 71% margin · low stock</div></div><button class="fadd">+</button></div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<script>
+function setMode(mode) {
+  const area = document.getElementById('canvas-area');
+  const bc = document.getElementById('btn-canvas');
+  const bp = document.getElementById('btn-prompt');
+  if (mode === 'prompt') {
+    area.classList.add('prompt');
+    bc.classList.remove('on');
+    bp.classList.add('on');
+  } else {
+    area.classList.remove('prompt');
+    bp.classList.remove('on');
+    bc.classList.add('on');
+  }
+}
+</script>
+</body>
+</html>
